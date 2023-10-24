@@ -2,11 +2,24 @@
 import { AlertDialog, Button, Flex } from "@radix-ui/themes";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const DeleteIssueButton = ({ issueId }: { issueId: number }) => {
   const router = useRouter();
+  const [error, setError] = useState(false);
+  const deleteIssue = async () => {
+    try {
+        await axios.delete("/api/issues/" + issueId);
+        router.push("/issues");
+        router.refresh()
+    } catch (error) {
+        setError(true);
+        console.log(error);
+    }
+  }
   return (
-    <AlertDialog.Root>
+    <>
+        <AlertDialog.Root>
       <AlertDialog.Trigger>
         <Button color="red">Delete Issue</Button>
       </AlertDialog.Trigger>
@@ -25,11 +38,7 @@ const DeleteIssueButton = ({ issueId }: { issueId: number }) => {
           <AlertDialog.Action>
             <Button
               color="red"
-              onClick={async () => {
-                await axios.delete("/api/issue/" + issueId);
-                router.push("/issues");
-                router.refresh()
-              }}
+              onClick={deleteIssue}
             >
               Delete Issue
             </Button>
@@ -37,6 +46,14 @@ const DeleteIssueButton = ({ issueId }: { issueId: number }) => {
         </Flex>
       </AlertDialog.Content>
     </AlertDialog.Root>
+    <AlertDialog.Root open={error}>
+        <AlertDialog.Content>
+            <AlertDialog.Title>Error</AlertDialog.Title>
+            <AlertDialog.Description>This issue could not be deleted.</AlertDialog.Description>
+            <Button color="gray" variant="soft" onClick={() => setError(false)} className="mt-2">OK</Button>
+        </AlertDialog.Content>
+    </AlertDialog.Root>
+    </>
   );
 };
 
